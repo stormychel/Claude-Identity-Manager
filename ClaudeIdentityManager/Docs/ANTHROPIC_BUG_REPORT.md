@@ -6,7 +6,7 @@ I have my own Claude Code account and one from a client's Team, and I want to us
 
 ## Environment
 
-- macOS 14+ (Sonoma)
+- macOS 26 (Tahoe)
 - Claude Code v2.1.29
 - Multiple Claude accounts (personal + client Team)
 

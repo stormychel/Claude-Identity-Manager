@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Known Limitation
 
-**Credential isolation is currently broken in Claude Code.** While `CLAUDE_CONFIG_DIR` isolates config files, OAuth credentials are stored in macOS Keychain and the lookup doesn't properly respect this variable. See `Docs/ANTHROPIC_BUG_REPORT.md` for details. Users may need to run `/login` for each identity.
+**Credential isolation is currently broken in Claude Code.** While `CLAUDE_CONFIG_DIR` isolates config files, OAuth credentials are stored in macOS Keychain and the lookup doesn't properly respect this variable. See `ClaudeIdentityManager/Docs/ANTHROPIC_BUG_REPORT.md` for details. Users may need to run `/login` for each identity.
 
 ## Project Overview
 

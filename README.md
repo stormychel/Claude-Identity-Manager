@@ -8,7 +8,7 @@ A lightweight macOS SwiftUI app that manages multiple Claude Code identities and
 
 > ## Known Limitation: Credential Isolation Issue
 >
-> **Status:** Reported to Anthropic ([see bug report](Docs/ANTHROPIC_BUG_REPORT.md))
+> **Status:** Reported to Anthropic ([see bug report](ClaudeIdentityManager/Docs/ANTHROPIC_BUG_REPORT.md))
 >
 > Claude Code stores OAuth credentials in the macOS Keychain rather than in the config directory. While `CLAUDE_CONFIG_DIR` correctly isolates settings and user metadata, the Keychain credential lookup does not properly respect this variable.
 >
