@@ -1,8 +1,19 @@
 # Claude Code: CLAUDE_CONFIG_DIR Does Not Isolate Keychain Credentials
 
-## Summary
+## Existing GitHub Issues
 
-I have my own Claude Code account and one from a client's Team, and I want to use them on the same Mac. I created a small identity switcher app to launch Claude with different `CLAUDE_CONFIG_DIR` values, but hit a roadblock: credentials stored in macOS Keychain are not isolated per config directory.
+**This issue has already been reported. Please upvote/comment on these instead of creating a new issue:**
+
+- **[#20553](https://github.com/anthropics/claude-code/issues/20553)** - OAuth credentials shared across CLAUDE_CONFIG_DIR profiles causing data isolation failure (compliance risk) - *Exact match*
+- **[#15670](https://github.com/anthropics/claude-code/issues/15670)** - CLAUDE_CONFIG_DIR doesn't completely isolate installations - *Same use case*
+- [#16103](https://github.com/anthropics/claude-code/issues/16103) - Cannot resume sessions when using CLAUDE_CONFIG_DIR
+- [#16899](https://github.com/anthropics/claude-code/issues/16899) - statusline-setup agent ignores CLAUDE_CONFIG_DIR
+
+---
+
+## Our Use Case
+
+I have my own Claude Code account and one from a client's Team, and I want to use them on the same Mac. I created a small identity switcher app ([Claude Identity Manager](https://github.com/stormychel/Claude-Identity-Manager)) to launch Claude with different `CLAUDE_CONFIG_DIR` values, but hit this roadblock: credentials stored in macOS Keychain are not isolated per config directory.
 
 ## Environment
 
@@ -10,111 +21,35 @@ I have my own Claude Code account and one from a client's Team, and I want to us
 - Claude Code v2.1.29
 - Multiple Claude accounts (personal + client Team)
 
-## Expected Behavior
+## The Problem
 
 When launching Claude Code with:
 ```bash
 env CLAUDE_CONFIG_DIR="$HOME/.claude/identities/client-acme" claude
 ```
 
-I expect:
-1. Config files to be read from/written to the specified directory ✅ (works)
-2. OAuth credentials to be isolated per config directory ❌ (does not work)
+- Config files are correctly isolated ✅
+- OAuth credentials are NOT isolated ❌ (stored in shared Keychain entry)
 
-## Actual Behavior
-
-Claude Code stores OAuth credentials in the macOS Keychain with service names like:
+Claude stores OAuth credentials in macOS Keychain with service names like:
 - `Claude Code-credentials` (default)
-- `Claude Code-credentials-08d5ad37` (hashed)
-- `Claude Code-credentials-27cc539e` (hashed)
+- `Claude Code-credentials-{hash}` (created but not found on subsequent launches)
 
-When authenticating with `CLAUDE_CONFIG_DIR` set, Claude creates a new Keychain entry with a hash suffix. However, on subsequent launches with the same `CLAUDE_CONFIG_DIR`, Claude fails to find the matching Keychain entry and shows:
+The Keychain lookup doesn't properly use the hash that corresponds to `CLAUDE_CONFIG_DIR`, so credentials from one profile overwrite another, or simply aren't found.
 
+## Suggested Fix (from #20553)
+
+Keychain entries should be namespaced by config directory:
 ```
-Welcome back [User]!
-...
-Missing API key · Run /login
-```
-
-The banner shows user info (read from `.claude.json` in the config directory), but the actual OAuth token lookup fails.
-
-## Steps to Reproduce
-
-1. Set up two identity directories:
-   ```bash
-   mkdir -p ~/.claude/identities/personal
-   mkdir -p ~/.claude/identities/client
-   ```
-
-2. Launch Claude with first identity and authenticate:
-   ```bash
-   env CLAUDE_CONFIG_DIR="$HOME/.claude/identities/personal" claude
-   # Run /login, complete OAuth flow
-   ```
-
-3. Exit and relaunch with same config:
-   ```bash
-   env CLAUDE_CONFIG_DIR="$HOME/.claude/identities/personal" claude
-   ```
-
-4. Observe: Shows "Missing API key · Run /login" despite having authenticated in step 2
-
-## Investigation Findings
-
-### Config Directory (Works)
-
-The `.claude.json` file in the identity directory correctly stores:
-```json
-{
-  "oauthAccount": {
-    "accountUuid": "...",
-    "emailAddress": "...",
-    "organizationName": "...",
-    "displayName": "..."
-  }
-}
+Claude Code-credentials-{md5(CLAUDE_CONFIG_DIR)[:8]}
 ```
 
-### Keychain (Does Not Work)
+Or store OAuth tokens in the config directory itself (encrypted).
 
-OAuth tokens (accessToken, refreshToken) are stored in macOS Keychain, NOT in the config directory. The Keychain entries are:
+## Workaround
 
-```
-svce: "Claude Code-credentials"          acct: "username"
-svce: "Claude Code-credentials-08d5ad37" acct: "username"
-svce: "Claude Code-credentials-27cc539e" acct: "username"
-```
-
-The hash suffix appears to be generated when authenticating with `CLAUDE_CONFIG_DIR` set, but the lookup mechanism on subsequent launches doesn't find the correct entry.
-
-## Use Case
-
-Many developers work with multiple Claude accounts:
-- Personal account for side projects
-- Company/Team account for work
-- Client Team accounts for consulting
-
-Being able to switch between these on the same machine without logging in/out each time would significantly improve the workflow.
-
-## Suggested Fix
-
-When `CLAUDE_CONFIG_DIR` is set, Claude Code should:
-1. Generate a consistent hash/identifier from the config directory path
-2. Use `Claude Code-credentials-{hash}` for both storing AND retrieving Keychain credentials
-3. Ensure the hash generation is deterministic so lookups match stores
-
-Alternatively:
-- Store OAuth tokens in the config directory itself (encrypted)
-- Or document an environment variable specifically for Keychain isolation
-
-## Workaround Attempted
-
-Setting `HOME` in addition to `CLAUDE_CONFIG_DIR` does not help, as the Keychain is tied to the macOS user account, not the HOME directory.
-
-## Related
-
-This may be related to: https://github.com/anthropics/claude-code/issues/1455 (XDG Base Directory support)
+Run `/login` each time you switch identities (not ideal for frequent switching).
 
 ---
 
-Thank you for looking into this. Happy to provide additional details or test any fixes.
+*This document is part of the Claude Identity Manager project - a SwiftUI app attempting to solve multi-account usage on macOS.*
