@@ -43,9 +43,35 @@ struct ClaudeIdentityManagerApp: App {
 // MARK: - Settings View
 
 struct SettingsView: View {
+    @State private var selectedTerminal: TerminalApp = ClaudeLauncher.shared.getPreferredTerminal()
+
     var body: some View {
         Form {
-            Section {
+            Section("Terminal") {
+                Picker("Terminal App", selection: $selectedTerminal) {
+                    ForEach(TerminalApp.allCases) { terminal in
+                        HStack {
+                            Text(terminal.displayName)
+                            if !terminal.isInstalled {
+                                Text("(not installed)")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .tag(terminal)
+                    }
+                }
+                .onChange(of: selectedTerminal) { newValue in
+                    ClaudeLauncher.shared.setPreferredTerminal(newValue)
+                }
+
+                if !selectedTerminal.isInstalled {
+                    Label("\(selectedTerminal.displayName) is not installed. Terminal.app will be used as fallback.", systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+            }
+
+            Section("Paths") {
                 LabeledContent("Identities Location") {
                     Text(Constants.identitiesDirectory.path)
                         .textSelection(.enabled)
@@ -65,7 +91,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 450, height: 150)
+        .frame(width: 500, height: 250)
     }
 }
 
