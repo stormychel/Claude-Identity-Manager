@@ -134,6 +134,8 @@ final class ClaudeLauncher {
             commands.append("cd '\(workDir.path)'")
         }
 
+        // Set CLAUDE_CONFIG_DIR for config files
+        // Note: Keychain credentials are stored separately and may not be fully isolated
         commands.append("env CLAUDE_CONFIG_DIR='\(identityPath)' '\(claudePath.path)'")
         let fullCommand = commands.joined(separator: "; ")
 
@@ -148,14 +150,12 @@ final class ClaudeLauncher {
     }
 
     private func launchInITerm(claudePath: URL, identityPath: String, workingDirectory: URL?) throws {
-        var commands: [String] = []
+        // Build command using env to ensure CLAUDE_CONFIG_DIR is set for the process
+        var command = "env CLAUDE_CONFIG_DIR='\(identityPath)' '\(claudePath.path)'"
 
         if let workDir = workingDirectory {
-            commands.append("cd '\(workDir.path)'")
+            command = "cd '\(workDir.path)' && \(command)"
         }
-
-        commands.append("env CLAUDE_CONFIG_DIR='\(identityPath)' '\(claudePath.path)'")
-        let fullCommand = commands.joined(separator: "; ")
 
         let script = """
             tell application "iTerm"
@@ -166,7 +166,7 @@ final class ClaudeLauncher {
                 tell current window
                     create tab with default profile
                     tell current session
-                        write text "\(fullCommand)"
+                        write text "\(command)"
                     end tell
                 end tell
             end tell

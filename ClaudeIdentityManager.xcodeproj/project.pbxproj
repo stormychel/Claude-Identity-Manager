@@ -42,6 +42,7 @@
 		A2000015000000000000000F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000160000000000000010 /* ClaudeIdentityManager.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ClaudeIdentityManager.entitlements; sourceTree = "<group>"; };
 		A30000010000000000000001 /* ClaudeIdentityManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClaudeIdentityManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D9D1C9082F2EEB93002DC3A8 /* ANTHROPIC_BUG_REPORT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ANTHROPIC_BUG_REPORT.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +68,7 @@
 			isa = PBXGroup;
 			children = (
 				A50000040000000000000004 /* App */,
+				D9D1C9092F2EEB93002DC3A8 /* Docs */,
 				A50000050000000000000005 /* Models */,
 				A50000060000000000000006 /* ViewModels */,
 				A50000070000000000000007 /* Views */,
@@ -148,6 +150,14 @@
 				A20000160000000000000010 /* ClaudeIdentityManager.entitlements */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		D9D1C9092F2EEB93002DC3A8 /* Docs */ = {
+			isa = PBXGroup;
+			children = (
+				D9D1C9082F2EEB93002DC3A8 /* ANTHROPIC_BUG_REPORT.md */,
+			);
+			path = Docs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

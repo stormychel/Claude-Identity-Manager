@@ -6,6 +6,18 @@ A lightweight macOS SwiftUI app that manages multiple Claude Code identities and
 
 ---
 
+> ## Known Limitation: Credential Isolation Issue
+>
+> **Status:** Reported to Anthropic ([see bug report](Docs/ANTHROPIC_BUG_REPORT.md))
+>
+> Claude Code stores OAuth credentials in the macOS Keychain rather than in the config directory. While `CLAUDE_CONFIG_DIR` correctly isolates settings and user metadata, the Keychain credential lookup does not properly respect this variable.
+>
+> **Impact:** After authenticating an identity, subsequent launches may show "Missing API key · Run /login" even though you've already logged in.
+>
+> **Workaround:** Run `/login` for each identity when prompted. We are working with Anthropic to resolve this.
+
+---
+
 ## Goals
 
 * Explicit identity selection every time Claude is launched

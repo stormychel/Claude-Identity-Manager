@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Known Limitation
+
+**Credential isolation is currently broken in Claude Code.** While `CLAUDE_CONFIG_DIR` isolates config files, OAuth credentials are stored in macOS Keychain and the lookup doesn't properly respect this variable. See `Docs/ANTHROPIC_BUG_REPORT.md` for details. Users may need to run `/login` for each identity.
+
 ## Project Overview
 
 Claude Identity Manager is a native macOS SwiftUI app that manages multiple Claude Code identities. It launches Claude with isolated config directories to prevent accidental account mixing between personal and client work.
@@ -38,13 +42,13 @@ ClaudeIdentityManager/
 │   └── MenuBarView.swift                 # Menu bar popover content
 ├── Services/
 │   ├── FileSystemService.swift           # Identity folder CRUD
-│   └── ClaudeLauncher.swift              # Find claude, launch in Terminal
+│   └── ClaudeLauncher.swift              # Terminal launch with env vars
 └── Utilities/
     └── Constants.swift                   # Paths, validation regex
 ```
 
 **Key files:**
-- `ClaudeLauncher.swift:36` - Launches Claude with `XDG_CONFIG_HOME` via AppleScript/Terminal
+- `ClaudeLauncher.swift:78` - Launches Claude with `CLAUDE_CONFIG_DIR` via AppleScript
 - `FileSystemService.swift:13` - Discovers identities by scanning `~/.claude/identities/`
 - `Constants.swift:10` - Identity directory path: `~/.claude/identities/`
 
