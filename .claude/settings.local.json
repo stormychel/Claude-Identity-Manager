@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git ls-tree:*)",
+      "Bash(while read hash msg)",
+      "Bash(do echo \"=== $msg ===\")",
+      "Bash(done)",
+      "Bash(swift build:*)",
+      "Bash(pgrep:*)",
+      "Bash(pkill:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(open:*)",
+      "Bash(env XDG_CONFIG_HOME=/tmp/test-claude-config claude:*)",
+      "Bash(claude config --help:*)",
+      "WebSearch",
+      "WebFetch(domain:ccusage.com)"
+    ]
+  }
+}

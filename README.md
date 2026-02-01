@@ -31,7 +31,7 @@ A lightweight macOS SwiftUI app that manages multiple Claude Code identities and
 Claude stores its login state under its config directory. By launching Claude with a different config directory per identity, we get clean isolation:
 
 ```bash
-XDG_CONFIG_HOME=~/.claude/identities/<identity-name> claude
+CLAUDE_CONFIG_DIR=~/.claude/identities/<identity-name> claude
 ```
 
 * Each identity logs in independently
