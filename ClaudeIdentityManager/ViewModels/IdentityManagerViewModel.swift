@@ -97,8 +97,8 @@ final class IdentityManagerViewModel: ObservableObject {
     // MARK: - Launch
 
     /// Launches Claude with the specified identity
-    func launchClaude(with identity: Identity) async throws {
-        try claudeLauncher.launch(identity: identity)
+    func launchClaude(with identity: Identity, in directory: URL? = nil) async throws {
+        try claudeLauncher.launch(identity: identity, workingDirectory: directory)
     }
 
     // MARK: - Validation

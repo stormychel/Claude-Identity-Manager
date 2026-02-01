@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct ContentView: View {
     @EnvironmentObject var viewModel: IdentityManagerViewModel
@@ -108,7 +109,19 @@ struct ContentView: View {
 
 struct IdentityDetailView: View {
     @EnvironmentObject var viewModel: IdentityManagerViewModel
+    @AppStorage("lastLaunchFolder") private var lastLaunchFolderPath: String = ""
     let identity: Identity
+
+    private var lastLaunchFolder: URL? {
+        guard !lastLaunchFolderPath.isEmpty else { return nil }
+        let url = URL(fileURLWithPath: lastLaunchFolderPath)
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory),
+              isDirectory.boolValue else {
+            return nil
+        }
+        return url
+    }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -142,23 +155,46 @@ struct IdentityDetailView: View {
 
             Spacer()
 
-            // Launch button
-            Button(action: {
-                Task {
-                    do {
-                        try await viewModel.launchClaude(with: identity)
-                    } catch {
-                        viewModel.errorMessage = error.localizedDescription
-                        viewModel.showError = true
-                    }
+            // Launch buttons
+            VStack(spacing: 12) {
+                // Launch in home directory
+                Button(action: {
+                    launchClaude(in: nil)
+                }) {
+                    Label("Launch Claude", systemImage: "play.fill")
+                        .frame(minWidth: 180)
                 }
-            }) {
-                Label("Launch Claude", systemImage: "play.fill")
-                    .frame(minWidth: 150)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(!viewModel.isClaudeAvailable)
+
+                // Launch in folder
+                Button(action: {
+                    selectFolderAndLaunch()
+                }) {
+                    HStack {
+                        Image(systemName: "folder.fill")
+                        if let folder = lastLaunchFolder {
+                            Text("Launch in \(folder.lastPathComponent)")
+                        } else {
+                            Text("Launch in Folder...")
+                        }
+                    }
+                    .frame(minWidth: 180)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .disabled(!viewModel.isClaudeAvailable)
+
+                // Show last folder path if set
+                if let folder = lastLaunchFolder {
+                    Text(folder.path)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .disabled(!viewModel.isClaudeAvailable)
 
             if !viewModel.isClaudeAvailable {
                 Text("Claude executable not found. Ensure Claude Code is installed.")
@@ -170,6 +206,36 @@ struct IdentityDetailView: View {
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func launchClaude(in directory: URL?) {
+        Task {
+            do {
+                try await viewModel.launchClaude(with: identity, in: directory)
+            } catch {
+                viewModel.errorMessage = error.localizedDescription
+                viewModel.showError = true
+            }
+        }
+    }
+
+    private func selectFolderAndLaunch() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.message = "Select a folder to launch Claude in"
+        panel.prompt = "Launch Here"
+
+        // Set initial directory to last used folder if available
+        if let lastFolder = lastLaunchFolder {
+            panel.directoryURL = lastFolder
+        }
+
+        if panel.runModal() == .OK, let url = panel.url {
+            lastLaunchFolderPath = url.path
+            launchClaude(in: url)
+        }
     }
 
     private func colorForIdentity(_ name: String) -> Color {
